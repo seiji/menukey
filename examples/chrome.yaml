@@ -1,0 +1,14 @@
+version: 1
+
+apps:
+  - bundle: com.google.Chrome
+    name: Google Chrome
+    shortcuts:
+      - menu: "New Tab"
+        key: "ctrl+t"
+
+      - menu: "Close Tab"
+        key: "ctrl+w"
+
+      - menu: "Reopen Closed Tab"
+        key: "ctrl+shift+t"
