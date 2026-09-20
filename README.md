@@ -137,3 +137,7 @@ make test              # unit tests, no machine state touched
 make test-integration  # exercises defaults(1) against a scratch preference domain
 make build
 ```
+
+## License
+
+[MIT](LICENSE)
