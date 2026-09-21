@@ -17,8 +17,8 @@ var version = "dev"
 
 var rootCmd = &cobra.Command{
 	Use:   "menukey",
-	Short: "Declaratively manage macOS application menu shortcuts",
-	Long: `menukey manages macOS application menu keyboard shortcuts from a YAML file.
+	Short: "Declaratively manage macOS App Shortcuts",
+	Long: `menukey declaratively manages macOS App Shortcuts.
 
 Shortcuts are stored in each application's NSUserKeyEquivalents preference,
 keyed by the menu item title as the application displays it. menukey merges the

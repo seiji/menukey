@@ -1,6 +1,6 @@
 # menukey
 
-Declaratively manage macOS application menu keyboard shortcuts from a YAML file.
+Declaratively manage macOS App Shortcuts.
 
 macOS lets you override any application's menu shortcut through *System Settings > Keyboard > Keyboard Shortcuts > App Shortcuts*. Those overrides are stored in the application's `NSUserKeyEquivalents` preference. `menukey` manages that preference from a file you can keep in Git and apply on every Mac you use.
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-`menukey` is a CLI for declaratively managing macOS application menu keyboard shortcuts.
+`menukey` is a CLI for declaratively managing macOS App Shortcuts.
 
 The initial use case is Google Chrome:
 
