@@ -12,12 +12,26 @@ The initial use case is making Google Chrome use Control-based tab shortcuts, wi
 go install github.com/seiji/menukey@latest
 ```
 
+To install a specific release, replace `@latest` with its tag, for example
+`@v0.1.0`. `menukey --version` reports that tag for versioned `go install`
+builds.
+
 Or build from a checkout:
 
 ```
 git clone https://github.com/seiji/menukey.git
 cd menukey
 make build
+```
+
+### Releases
+
+Pushing a version tag builds macOS archives for Apple Silicon and Intel, then
+creates a GitHub Release. The tag is embedded in each release binary.
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
 ```
 
 ## Usage

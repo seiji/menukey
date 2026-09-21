@@ -7,13 +7,41 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"runtime/debug"
 	"syscall"
 
 	"github.com/spf13/cobra"
 )
 
+const (
+	developmentVersion = "dev"
+	modulePath         = "github.com/seiji/menukey"
+)
+
 // version is overridden at build time with -ldflags "-X ...cmd.version=v0.1.0".
-var version = "dev"
+var version = developmentVersion
+
+func currentVersion() string {
+	if version != developmentVersion {
+		return version
+	}
+
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		return version
+	}
+	return resolvedVersion(version, info)
+}
+
+func resolvedVersion(linkedVersion string, info *debug.BuildInfo) string {
+	if linkedVersion != developmentVersion {
+		return linkedVersion
+	}
+	if info == nil || info.Main.Path != modulePath || info.Main.Version == "" || info.Main.Version == "(devel)" {
+		return linkedVersion
+	}
+	return info.Main.Version
+}
 
 var rootCmd = &cobra.Command{
 	Use:   "menukey",
@@ -23,7 +51,7 @@ var rootCmd = &cobra.Command{
 Shortcuts are stored in each application's NSUserKeyEquivalents preference,
 keyed by the menu item title as the application displays it. menukey merges the
 shortcuts you declare into that preference and leaves every other entry alone.`,
-	Version:       version,
+	Version:       currentVersion(),
 	SilenceUsage:  true,
 	SilenceErrors: true,
 }
