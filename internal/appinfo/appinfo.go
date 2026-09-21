@@ -63,14 +63,37 @@ func plistValue(ctx context.Context, plist, key string) (string, error) {
 	return strings.TrimSpace(string(out)), nil
 }
 
+// FindByBundle finds an installed application with bundle. It is used before
+// importing so that a misspelled bundle ID cannot create an empty entry.
+func FindByBundle(ctx context.Context, bundle string) (App, error) {
+	bundle = strings.TrimSpace(bundle)
+	if bundle == "" {
+		return App{}, fmt.Errorf("bundle identifier must not be empty")
+	}
+	spotlightQuery := "kMDItemContentType == \"com.apple.application-bundle\" && kMDItemCFBundleIdentifier == \"" + spotlightValue(bundle) + "\""
+	out, err := commandOutput(ctx, "mdfind", spotlightQuery)
+	if err != nil {
+		return App{}, err
+	}
+	for _, path := range strings.Split(strings.TrimSpace(string(out)), "\n") {
+		if path == "" {
+			continue
+		}
+		app, err := Inspect(ctx, path)
+		if err == nil && app.Bundle == bundle {
+			return app, nil
+		}
+	}
+	return App{}, fmt.Errorf("no installed application has bundle identifier %q", bundle)
+}
+
 // Search finds application bundles whose Spotlight display name matches query.
 func Search(ctx context.Context, query string) ([]App, error) {
 	query = strings.TrimSpace(query)
 	if query == "" {
 		return nil, fmt.Errorf("search query must not be empty")
 	}
-	query = strings.NewReplacer("\\", "\\\\", "\"", "\\\"").Replace(query)
-	spotlightQuery := "kMDItemContentType == \"com.apple.application-bundle\" && kMDItemDisplayName == \"*" + query + "*\"cd"
+	spotlightQuery := "kMDItemContentType == \"com.apple.application-bundle\" && kMDItemDisplayName == \"*" + spotlightValue(query) + "*\"cd"
 	out, err := commandOutput(ctx, "mdfind", spotlightQuery)
 	if err != nil {
 		return nil, err
@@ -96,4 +119,8 @@ func Search(ctx context.Context, query string) ([]App, error) {
 		return strings.Compare(a.Path, b.Path)
 	})
 	return apps, nil
+}
+
+func spotlightValue(value string) string {
+	return strings.NewReplacer("\\", "\\\\", "\"", "\\\"").Replace(value)
 }

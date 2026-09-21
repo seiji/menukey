@@ -40,9 +40,9 @@ menukey sync
 # CI-friendly status check: exit 1 if synchronization is needed
 menukey status --check
 
-# Capture one application's current shortcuts into the configuration
-menukey import com.apple.Safari
-# Use --replace to recapture an application that is already configured.
+# Capture an application's current shortcuts into the configuration.
+# --replace is needed because Chrome is already configured above.
+menukey import "/Applications/Google Chrome.app" --replace
 
 ```
 
@@ -64,7 +64,7 @@ Pass `--config <file>` to any command to use another configuration. `sync` and
 | `search` | Find installed applications and display their bundle IDs | — |
 | `set` | Add or update a configured shortcut | — |
 | `unset` | Remove an application or shortcut declaration | `unset <bundle-id> [menu]` |
-| `import` | Import an application's current shortcuts into the configuration | `--name <name>`, `--replace` |
+| `import` | Import an application's current shortcuts into the configuration | Pass a `.app` path; `--name <name>`, `--replace` |
 
 
 ### Adding applications
@@ -79,6 +79,9 @@ menukey add "/Applications/Google Chrome.app"
 Use `menukey search chrome` when the path is unknown. Supplying a bundle ID
 (`menukey add com.google.Chrome --name Chrome`) remains useful for scripts.
 
+`import` also accepts an `.app` path and verifies that the application exists.
+A bundle ID is accepted only when it resolves to an installed application.
+
 ## Configuration
 
 ```yaml
@@ -88,14 +91,14 @@ apps:
   - bundle: com.google.Chrome
     name: Google Chrome        # optional, used in status output only
     shortcuts:
-      - menu: "New Tab"
-        key: "ctrl+t"
+      - menu: New Tab
+        key: ctrl+t
 
-      - menu: "Close Tab"
-        key: "ctrl+w"
+      - menu: Close Tab
+        key: ctrl+w
 
-      - menu: "Reopen Closed Tab"
-        key: "ctrl+shift+t"
+      - menu: Reopen Closed Tab
+        key: ctrl+shift+t
 ```
 
 `menu` must be the menu item title exactly as the application displays it, because that title is what `NSUserKeyEquivalents` is keyed by. Titles are locale specific: an application running in Japanese needs the Japanese title.

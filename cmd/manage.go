@@ -11,7 +11,7 @@ import (
 )
 
 var importCmd = &cobra.Command{
-	Use:   "import <bundle-id>",
+	Use:   "import <bundle-id-or-app-path>",
 	Short: "Import an application's current shortcuts into the configuration",
 	Long: `Import reads an application's current shortcuts and writes them to the
 configuration. It refuses to replace an application already in the
@@ -26,13 +26,17 @@ var (
 )
 
 func init() {
-	importCmd.Flags().StringVar(&importName, "name", "", "Human readable app name")
+	importCmd.Flags().StringVar(&importName, "name", "", "Human readable app name (overrides the name in an app bundle)")
 	importCmd.Flags().BoolVar(&importReplace, "replace", false, "Replace an existing application entry")
 	rootCmd.AddCommand(importCmd)
 }
 
 func runImport(cmd *cobra.Command, args []string) error {
-	bundleID := args[0]
+	app, err := appForImport(cmd.Context(), args[0], importName)
+	if err != nil {
+		return err
+	}
+	bundleID := app.Bundle
 	path, err := defaultConfigPath()
 	if err != nil {
 		return err
@@ -51,10 +55,10 @@ func runImport(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	app := config.App{Bundle: bundleID, Name: importName, Shortcuts: []config.Shortcut{}}
 	if i >= 0 && !cmd.Flags().Changed("name") {
 		app.Name = cfg.Apps[i].Name
 	}
+	app.Shortcuts = []config.Shortcut{}
 	for _, menu := range slices.Sorted(maps.Keys(entries)) {
 		key, err := keyspec.Decode(entries[menu])
 		if err != nil {

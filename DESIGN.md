@@ -42,13 +42,13 @@ apps:
   - bundle: com.google.Chrome
     name: Google Chrome
     shortcuts:
-      - menu: "New Tab"
-        key: "ctrl+t"
+      - menu: New Tab
+        key: ctrl+t
 ```
 
 `bundle` was chosen over `bundle_id` and `app`: it is the shortest spelling that still says what the value is. `name` is optional and affects status output only.
 
-Unknown fields are rejected, so a misspelled key is an error rather than a silently ignored shortcut.
+Unknown fields are rejected, so a misspelled key is an error rather than a silently ignored shortcut. `set` and `import` sort shortcuts by `menu` so generated changes have a stable order.
 
 ## Key Encoding
 
@@ -82,7 +82,7 @@ The normal workflow uses `~/.config/menukey/config.yaml` (or
 | `search <query>` | Find installed apps and print their name, bundle ID, and path |
 | `set <bundle-id> <menu> <key>` | Add or update a menu shortcut |
 | `unset <bundle-id> [menu]` | Remove an application declaration, or one menu shortcut declaration |
-| `import <bundle-id>` | Read current entries into the configuration; `--replace` is required for an existing app |
+| `import <bundle-id-or-app-path>` | Read current entries into the configuration; `--replace` is required for an existing app |
 
 `sync` and `status` accept either the optional file argument or `--config`; all
 other configuration commands use `--config` when the default file is not
@@ -95,10 +95,11 @@ menukey reads the app bundle's `Info.plist` to obtain its bundle ID and display
 name. `search <query>` uses Spotlight to find paths when needed; direct bundle
 IDs remain supported for scripts.
 
-`import` reads every entry of the domain, not only entries menukey wrote: there
-is no ownership tracking, so it cannot tell them apart. An entry that cannot be
-decoded is reported on stderr and skipped rather than being written out in a
-form `sync` would later reject.
+`import` verifies that the app exists. A `.app` path is checked directly; a
+bundle ID is resolved through Spotlight. It then reads every entry of the
+domain, not only entries menukey wrote: there is no ownership tracking, so it
+cannot tell them apart. An entry that cannot be decoded is reported on stderr
+and skipped rather than being written out in a form `sync` would later reject.
 
 ## Implementation
 

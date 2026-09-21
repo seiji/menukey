@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
+	"slices"
+	"strings"
 
 	"github.com/seiji/menukey/internal/appinfo"
 	"github.com/seiji/menukey/internal/config"
@@ -23,8 +25,15 @@ func appIndex(cfg *config.Config, bundle string) int {
 	return -1
 }
 
+func sortShortcuts(shortcuts []config.Shortcut) {
+	slices.SortFunc(shortcuts, func(a, b config.Shortcut) int {
+		return strings.Compare(a.Menu, b.Menu)
+	})
+}
+
 var (
 	inspectApplication = appinfo.Inspect
+	findApplication    = appinfo.FindByBundle
 	searchApplications = appinfo.Search
 )
 
@@ -36,10 +45,25 @@ func appFromArgument(ctx context.Context, argument, name string) (config.App, er
 	if err != nil {
 		return config.App{}, err
 	}
+	return configApp(info, name), nil
+}
+
+func appForImport(ctx context.Context, argument, name string) (config.App, error) {
+	if filepath.Ext(filepath.Clean(argument)) == ".app" {
+		return appFromArgument(ctx, argument, name)
+	}
+	info, err := findApplication(ctx, argument)
+	if err != nil {
+		return config.App{}, err
+	}
+	return configApp(info, name), nil
+}
+
+func configApp(info appinfo.App, name string) config.App {
 	if name != "" {
 		info.Name = name
 	}
-	return config.App{Bundle: info.Bundle, Name: info.Name, Shortcuts: []config.Shortcut{}}, nil
+	return config.App{Bundle: info.Bundle, Name: info.Name, Shortcuts: []config.Shortcut{}}
 }
 
 var appAddCmd = &cobra.Command{
@@ -118,6 +142,7 @@ var shortcutSetCmd = &cobra.Command{
 		if !found {
 			app.Shortcuts = append(app.Shortcuts, config.Shortcut{Menu: args[1], Key: args[2]})
 		}
+		sortShortcuts(app.Shortcuts)
 		if err := cfg.Save(path); err != nil {
 			return err
 		}

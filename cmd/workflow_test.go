@@ -106,6 +106,33 @@ func TestAppAddReadsAnApplicationBundle(t *testing.T) {
 	}
 }
 
+func TestSetSortsShortcutsByMenu(t *testing.T) {
+	path := t.TempDir() + "/config.yaml"
+	cfg := &config.Config{Version: config.Version, Apps: []config.App{{
+		Bundle:    "com.google.Chrome",
+		Shortcuts: []config.Shortcut{{Menu: "New Tab", Key: "ctrl+t"}},
+	}}}
+	if err := cfg.Save(path); err != nil {
+		t.Fatal(err)
+	}
+	oldConfigFile := configFile
+	defer func() { configFile = oldConfigFile }()
+	configFile = path
+
+	cmd := &cobra.Command{}
+	cmd.SetOut(&bytes.Buffer{})
+	if err := shortcutSetCmd.RunE(cmd, []string{"com.google.Chrome", "Close Tab", "ctrl+w"}); err != nil {
+		t.Fatalf("set failed: %v", err)
+	}
+	loaded, err := config.Load(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := loaded.Apps[0].Shortcuts[0].Menu, "Close Tab"; got != want {
+		t.Errorf("first menu = %q, want %q", got, want)
+	}
+}
+
 func TestUnsetRemovesShortcutThenApplication(t *testing.T) {
 	path := t.TempDir() + "/config.yaml"
 	cfg := &config.Config{Version: config.Version, Apps: []config.App{{
